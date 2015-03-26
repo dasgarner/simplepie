@@ -33,7 +33,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * @package SimplePie
- * @version 1.4-dev
+ * @version 1.3.1
  * @copyright 2004-2012 Ryan Parman, Geoffrey Sneddon, Ryan McCue
  * @author Ryan Parman
  * @author Geoffrey Sneddon
@@ -113,6 +113,15 @@ class SimplePie_File
 					curl_setopt($fp, CURLOPT_MAXREDIRS, $redirects);
 				}
 
+				// Dan Garner PATCH
+				if (Config::GetSetting('PROXY_HOST') != '') {
+					curl_setopt($fp, CURLOPT_PROXY, Config::GetSetting('PROXY_HOST')); 
+ 					curl_setopt($fp, CURLOPT_PROXYPORT, Config::GetSetting('PROXY_PORT'));
+
+ 					if (Config::GetSetting('PROXY_AUTH') != '')
+ 						curl_setopt($fp, CURLOPT_PROXYUSERPWD, Config::GetSetting('PROXY_AUTH'));
+				}
+
 				$this->headers = curl_exec($fp);
 				if (curl_errno($fp) === 23 || curl_errno($fp) === 61)
 				{
@@ -128,8 +137,15 @@ class SimplePie_File
 				{
 					$info = curl_getinfo($fp);
 					curl_close($fp);
+
+					// Remove headers from redirects
 					$this->headers = explode("\r\n\r\n", $this->headers, $info['redirect_count'] + 1);
 					$this->headers = array_pop($this->headers);
+					
+					// DG: Patch to strip double headers for HTTPS Proxies (they add headers without incrementing redirect count)
+					$this->headers = SimplePie_HTTP_Parser::strip_double_headers($this->headers);
+					//Debug::Audit('Headers: ' . var_export($this->headers, true));
+					
 					$parser = new SimplePie_HTTP_Parser($this->headers);
 					if ($parser->parse())
 					{
