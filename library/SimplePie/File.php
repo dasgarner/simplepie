@@ -114,12 +114,12 @@ class SimplePie_File
 				}
 
 				// Dan Garner PATCH
-				if (Config::GetSetting('PROXY_HOST') != '' && !Config::isProxyException($url)) {
-					curl_setopt($fp, CURLOPT_PROXY, Config::GetSetting('PROXY_HOST')); 
- 					curl_setopt($fp, CURLOPT_PROXYPORT, Config::GetSetting('PROXY_PORT'));
+				if (\Xibo\Helper\Config::GetSetting('PROXY_HOST') != '' && !\Xibo\Helper\Config::isProxyException($url)) {
+					curl_setopt($fp, CURLOPT_PROXY, \Xibo\Helper\Config::GetSetting('PROXY_HOST')); 
+ 					curl_setopt($fp, CURLOPT_PROXYPORT, \Xibo\Helper\Config::GetSetting('PROXY_PORT'));
 
- 					if (Config::GetSetting('PROXY_AUTH') != '')
- 						curl_setopt($fp, CURLOPT_PROXYUSERPWD, Config::GetSetting('PROXY_AUTH'));
+ 					if (\Xibo\Helper\Config::GetSetting('PROXY_AUTH') != '')
+ 						curl_setopt($fp, CURLOPT_PROXYUSERPWD, \Xibo\Helper\Config::GetSetting('PROXY_AUTH'));
 				}
 
 				$this->headers = curl_exec($fp);
@@ -143,7 +143,7 @@ class SimplePie_File
 					$this->headers = array_pop($this->headers);
 					
 					// DG: Patch to strip double headers for HTTPS Proxies (they add headers without incrementing redirect count)
-					$this->headers = SimplePie_HTTP_Parser::strip_double_headers($this->headers);
+					//$this->headers = SimplePie_HTTP_Parser::strip_double_headers($this->headers);
 					//Debug::Audit('Headers: ' . var_export($this->headers, true));
 					
 					$parser = new SimplePie_HTTP_Parser($this->headers);
